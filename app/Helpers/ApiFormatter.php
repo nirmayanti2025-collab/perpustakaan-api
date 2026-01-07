@@ -17,6 +17,7 @@ class ApiFormatter
 
         return response()->json(self::$response, self::$response['code']);
     }
+    
     public static function filterSensitiveData(array $data = []): array
     {
         $sensitiveFields = [
