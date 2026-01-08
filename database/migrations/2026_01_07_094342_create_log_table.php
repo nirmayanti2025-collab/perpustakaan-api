@@ -12,8 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('log', function (Blueprint $table) {
-            $table->id();
+            $table->increments('log_id');
+            $table->string('user_id')->nullable();
+            $table->string('log_method');
+            $table->string('log_url');
+            $table->string('log_ip');
+            $table->text('log_request');
+            $table->text('log_response')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

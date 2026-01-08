@@ -11,13 +11,13 @@ class ApiFormatter
     ];
 
     public static function createJson ($code, $message, $data = []) {
-        self ::$response['code']   =$code;
-        self ::$response['message']   =$message;
-        self ::$response['data']   =$data;
+        self::$response['code'] = $code;
+        self::$response['message'] = $message;
+        self::$response['data'] = $data;
 
-        return response()->json(self::$response, self::$response['code']);
+        // Return array payload only; controllers should wrap with response()->json(..., $code)
+        return self::$response;
     }
-    
     public static function filterSensitiveData(array $data = []): array
     {
         $sensitiveFields = [
