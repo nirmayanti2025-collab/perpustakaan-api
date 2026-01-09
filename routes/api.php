@@ -1,35 +1,17 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+// routes/api.php
+use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\BukuController;
 
-use App\Http\Controllers\Api\AuthController;
+// KATEGORI
+Route::get('/kategori', [KategoriController::class, 'index']);
+Route::post('/kategori', [KategoriController::class, 'store']);
+Route::put('/kategori/{id}', [KategoriController::class, 'update']);
+Route::delete('/kategori/{id}', [KategoriController::class, 'destroy']);
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
-
-Route::group(['middleware' => 'auth'], function () {
-
-    // ===== USER =====
-    Route::get('me', [AuthController::class, 'me']);
-    Route::get('refresh', [AuthController::class, 'refresh']);
-    Route::get('logout', [AuthController::class, 'logout']);
-
-    // ===== PROTECTED ROUTES =====
-});
+// BUKU
+Route::get('/buku', [BukuController::class, 'index']);
+Route::post('/buku', [BukuController::class, 'store']);
+Route::put('/buku/{id}', [BukuController::class, 'update']);
+Route::delete('/buku/{id}', [BukuController::class, 'destroy']);
