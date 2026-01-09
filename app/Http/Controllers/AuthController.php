@@ -35,12 +35,12 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-        if (! $token = auth()->attempt($credentials)) {
+        if (! $token = auth('api')->attempt($credentials)) {
             return response()->json(['message' => 'Login gagal'], 401);
         }
 
         ActivityLog::create([
-            'user_id' => auth()->id(),
+            'user_id' => auth('api')->id(),
             'activity' => 'Login ke sistem'
         ]);
 
@@ -48,6 +48,20 @@ class AuthController extends Controller
             'message' => 'Login berhasil',
             'token' => $token,
             'type' => 'bearer'
+        ]);
+    }
+
+    public function me()
+    {
+        return response()->json(auth('api')->user());
+    }
+
+    public function logout()
+    {
+        auth('api')->logout();
+
+        return response()->json([
+            'message' => 'Logout berhasil'
         ]);
     }
 }

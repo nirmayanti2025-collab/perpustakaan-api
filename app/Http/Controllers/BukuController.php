@@ -62,6 +62,15 @@ class BukuController extends Controller
         ]);
     }
 
+    public function show($id)
+    {
+        $buku = Buku::with('kategori')->findOrFail($id);
+
+        return response()->json([
+            'data' => $buku
+        ]);
+    }
+
     public function destroy($id)
     {
         $buku = Buku::findOrFail($id);

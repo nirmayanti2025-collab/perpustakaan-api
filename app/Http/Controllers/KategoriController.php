@@ -40,6 +40,15 @@ class KategoriController extends Controller
         ]);
     }
 
+    public function show($id)
+    {
+        $kategori = Kategori::findOrFail($id);
+
+        return response()->json([
+            'data' => $kategori
+        ]);
+    }
+
     public function destroy($id)
     {
         $kategori = Kategori::findOrFail($id);

@@ -15,7 +15,6 @@ class LogModel extends Model
     protected $primaryKey = 'log_id';
 
     protected $fillable = [
-        'log_id',
         'user_id',
         'log_method',
         'log_url',
