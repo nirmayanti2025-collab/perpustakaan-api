@@ -1,159 +1,53 @@
 <?php
 
-namespace App\Http\Controllers\Api;
-
-use App\Http\Controllers\Controller;
-
-use Illuminate\Http\Request;
-
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-
-use Illuminate\Support\Facades\Validator;
-use App\Helpers\ApiFormatter;
-
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Carbon\Carbon;
+namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\ActivityLog;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        try {
-            $params = $request->all();
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6',
+            'role' => 'required'
+        ]);
 
-            $validator = Validator::make($params,
-            [
-                'name' => 'required|string',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|min:6',
-            ],
-            [
-                'name.required' => 'Name is required',
-                'email.required' => 'Email is required',
-                'email.email' => 'Email must be a valid email',
-                'email.unique' => 'Email already registered',
-                'password.required' => 'Password is required',
-                'password.min' => 'Password must be at least :min characters',
-            ]
-            );
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role
+        ]);
 
-            if ($validator->fails())
-                return response()->json(ApiFormatter::createJson(400, 'Bad Request', $validator->errors()->all()), 400);
-
-            $user = User::create([
-                'name' => $params['name'],
-                'email' => $params['email'],
-                'password' => Hash::make($params['password']),
-            ]);
-
-            if (!$user)
-                return response()->json(ApiFormatter::createJson(500, 'Failed to create account'), 500);
-
-            if (!$token = JWTAuth::fromUser($user))
-                return response()->json(ApiFormatter::createJson(500, 'Failed to generate token'), 500);
-
-            $currentDateTime = Carbon::now();
-            $expirationDateTime = $currentDateTime->addSeconds(JWTAuth::factory()->getTTL() * 60);
-
-            $info = [
-                'type' => 'Bearer',
-                'token' => $token,
-                'expires' => $expirationDateTime->format('Y-m-d H:i:s')
-            ];
-
-            return response()->json(ApiFormatter::createJson(201, 'Account created', $info), 201);
-        } catch (\Exception $e) {
-            return response()->json(ApiFormatter::createJson(500, 'Internal Server Error', $e->getMessage()),500);
-        }
+        return response()->json([
+            'message' => 'Register berhasil',
+            'user' => $user
+        ], 201);
     }
-    
+
     public function login(Request $request)
     {
-        try {
-            $params = $request->all();
-            
-            //validasi input
-            $validator = Validator::make($params,
-            [
-                'email'    => 'required|email',
-                'password' => 'required|min:6',
-            ],
-            [
-                'email.required' => 'Email is required',
-                'email.email' => 'Email must be a valid email',
-                'password.required' => 'Password is required',
-                'email.min' => 'Password must be at least :min characters',
-                ]
-            );
-            
-            if ($validator->fails())
-                return response()->json(ApiFormatter::createJson(400, 'Bad Request', $validator->errors()->all()), 400);
-            
-            //Cari user berdasarkan email
-            $user = User::where('email', $params['email'])->first();
-            if (!$user)
-                return response()->json(ApiFormatter::createJson(404, 'Account not found'), 404);
-            
-            //Periksa Password
-            if (!Hash::check($params['password'], $user->password))
-                return response()->json(ApiFormatter::createJson(401, 'Password does not match'), 401);
-            
-            // Generate token JWT
-            if (!$token = JWTAuth::fromUser($user))
-                return response()->json(ApiFormatter::createJson(500, 'Failed to generate token'), 500);
-            
-            // Informasi token
-            $currentDateTime = Carbon::now();
-            $expirationDateTime = $currentDateTime->addSeconds(JWTAuth::factory()->getTTL() * 60);
-            
-            $info = [
-                'type' => 'Bearer',
-                'token' => $token,
-                'expires' => $expirationDateTime->format('Y-m-d H:i:s')
-            ];
-            
-            return response()->json(ApiFormatter::createJson(200, 'Login successful', $info), 200);
-        } catch (\Exception $e) {
-            return response()->json(ApiFormatter::createJson(500, 'Internal Server Error', $e->getMessage()),500);
+        $credentials = $request->only('email', 'password');
+
+        if (! $token = auth()->attempt($credentials)) {
+            return response()->json(['message' => 'Login gagal'], 401);
         }
-    }
-    
-    public function me()
-    {
-        $user    = JWTAuth::parseToken()->authenticate();
-        $token   = JWTAuth::getToken();
-        $payload = JWTAuth::getPayload($token);
-        
-        $expiration     = $payload->get('exp');
-        $expiration_time = date('Y-m-d H:i:s', $expiration);
-        
-        $data['name']  = $user['name'];
-        $data['email'] = $user['email'];
-        $data['exp']   = $expiration_time;
-        
-        return response()->json(ApiFormatter:: createJson(200, 'Logged in User',$data), 200);
-    }
-    
-    public function refresh()
-    {
-        $currentDateTime = Carbon::now();
-        $expirationDateTime = $currentDateTime->addSeconds(JWTAuth::factory()->getTTL() * 60);
-        
-        $info = [
-            'type' => 'Bearer',
-            'token' => JWTAuth::refresh(),
-            'expires' => $expirationDateTime->format('Y-m-d H:i:s')
-        ];
-        
-        return response()->json(ApiFormatter:: createJson(200, 'Successfully refreshed', $info), 200);
-    }
-    
-    public function logout()
-    {
-        JWTAuth::invalidate(JWTAuth::getToken());
-        return response()->json(ApiFormatter::createJson(200, 'Successfully logged out'), 200);
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'activity' => 'Login ke sistem'
+        ]);
+
+        return response()->json([
+            'message' => 'Login berhasil',
+            'token' => $token,
+            'type' => 'bearer'
+        ]);
     }
 }
