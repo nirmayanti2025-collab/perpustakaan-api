@@ -1,4 +1,4 @@
-<?phpSchema::create('log_aktivitas', function (Blueprint $table) {
+<?php Schema::create('log_aktivitas', function (Blueprint $table) {
     $table->id();
     $table->foreignId('user_id');
     $table->string('aktivitas');

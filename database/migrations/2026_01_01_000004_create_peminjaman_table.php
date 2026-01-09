@@ -1,5 +1,4 @@
-<?php
-Schema::create('peminjaman', function (Blueprint $table) {
+<?php Schema::create('peminjaman', function (Blueprint $table) {
     $table->id();
     $table->foreignId('user_id');
     $table->foreignId('buku_id');
