@@ -1,6 +1,7 @@
 <?php 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Buku;
 use App\Models\Peminjaman;
@@ -8,6 +9,16 @@ use App\Models\LogAktivitas;
 
 class PeminjamanController extends Controller
 {
+    public function index()
+    {
+        $peminjamans = Peminjaman::with(['buku', 'user'])->get();
+        return response()->json([
+            'code' => 200,
+            'message' => 'Success',
+            'data' => $peminjamans
+        ]);
+    }
+
     public function pinjam(Request $request)
     {
         $request->validate([
@@ -42,5 +53,32 @@ class PeminjamanController extends Controller
         ]);
 
         return response()->json(['message' => 'Buku berhasil dipinjam']);
+    }
+
+    public function store(Request $request)
+    {
+        return response()->json([
+            'message' => 'Peminjaman berhasil',
+            'data' => $request->all()
+        ]);
+    }
+
+    public function show($id)
+    {
+        $peminjaman = Peminjaman::with(['buku', 'user'])->find($id);
+
+        if (!$peminjaman) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Peminjaman not found',
+                'data' => null
+            ], 404);
+        }
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'Success',
+            'data' => $peminjaman
+        ]);
     }
 }

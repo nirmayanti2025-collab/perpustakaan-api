@@ -1,6 +1,7 @@
 <?php 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Peminjaman;
 use App\Models\Buku;
@@ -8,7 +9,7 @@ use App\Models\LogAktivitas;
 
 class PengembalianController extends Controller
 {
-    public function kembali(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'peminjaman_id' => 'required',
@@ -35,6 +36,10 @@ class PengembalianController extends Controller
             'keterangan' => 'Mengembalikan buku: ' . $buku->judul
         ]);
 
-        return response()->json(['message' => 'Buku berhasil dikembalikan']);
+        return response()->json([
+            'code' => 200,
+            'message' => 'Buku berhasil dikembalikan',
+            'data' => $peminjaman
+        ]);
     }
 }
