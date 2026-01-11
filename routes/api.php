@@ -4,8 +4,10 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\KategoriController;
-use App\Http\Controllers\BukuController;
+use App\Http\Controllers\Api\KategoriController;
+use App\Http\Controllers\Api\BukuController;
+use App\Http\Controllers\Api\PeminjamanController;
+use App\Http\Controllers\Api\PengembalianController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +37,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/',       [KategoriController::class, 'store']);
         Route::get('/{id}',    [KategoriController::class, 'show']);
         Route::put('/{id}',    [KategoriController::class, 'update']);
+        Route::post('/{id}',   [KategoriController::class, 'update']);
         Route::delete('/{id}', [KategoriController::class, 'destroy']);
     });
 
@@ -48,4 +51,21 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/{id}',    [BukuController::class, 'update']);
         Route::delete('/{id}', [BukuController::class, 'destroy']);
     });
+
+    // =========================
+    // PEMINJAMAN ROUTES
+    // =========================
+    Route::prefix('peminjaman')->group(function () {
+        Route::get('/',     [PeminjamanController::class, 'index']); // list peminjaman
+        Route::post('/',    [PeminjamanController::class, 'store']); // pinjam buku
+        Route::get('/{id}', [PeminjamanController::class, 'show']);
+    });
+
+    // =========================
+    // PENGEMBALIAN ROUTES
+    // =========================
+    Route::prefix('pengembalian')->group(function () {
+        Route::post('/', [PengembalianController::class, 'store']); // kembalikan buku
+    });
+
 });

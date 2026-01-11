@@ -48,7 +48,7 @@ class AuthController extends Controller
             'message' => 'Login berhasil',
             'token' => $token,
             'type' => 'bearer'
-        ]);
+        ], 200);
     }
 
     public function me()
