@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\ActivityLog;
+use App\Models\LogAktivitas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -39,9 +39,10 @@ class AuthController extends Controller
             return response()->json(['message' => 'Login gagal'], 401);
         }
 
-        ActivityLog::create([
+        LogAktivitas::create([
             'user_id' => auth('api')->id(),
-            'activity' => 'Login ke sistem'
+            'aktivitas' => 'Login ke sistem',
+            'keterangan' => ''
         ]);
 
         return response()->json([

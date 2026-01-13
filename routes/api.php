@@ -4,8 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Api\KategoriController;
-use App\Http\Controllers\Api\BukuController;
+use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\BukuController;
 use App\Http\Controllers\Api\PeminjamanController;
 use App\Http\Controllers\Api\PengembalianController;
 
@@ -19,6 +19,22 @@ use App\Http\Controllers\Api\PengembalianController;
 // AUTH (PUBLIC)
 // =========================
 Route::post('/login', [AuthController::class, 'login']);
+// Public test routes (for Postman without auth)
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/test/kategori', [KategoriController::class, 'store']);
+Route::post('/test/buku', [BukuController::class, 'store']);
+Route::post('/test/peminjaman', [PeminjamanController::class, 'pinjam']);
+// Debug endpoint to echo received payload (helps diagnose Postman body issues)
+Route::post('/debug/kategori', function (Request $request) {
+    $raw = file_get_contents('php://input');
+    return response()->json([
+        'received' => $request->all(),
+        'raw' => $raw
+    ]);
+});
+// Make kategori index/create public for quick Postman testing
+Route::get('/kategori', [KategoriController::class, 'index']);
+Route::post('/kategori', [KategoriController::class, 'store']);
 
 // =========================
 // AUTHENTICATED ROUTES
@@ -57,7 +73,7 @@ Route::middleware('auth:api')->group(function () {
     // =========================
     Route::prefix('peminjaman')->group(function () {
         Route::get('/',     [PeminjamanController::class, 'index']); // list peminjaman
-        Route::post('/',    [PeminjamanController::class, 'store']); // pinjam buku
+        Route::post('/',    [PeminjamanController::class, 'pinjam']); // pinjam buku
         Route::get('/{id}', [PeminjamanController::class, 'show']);
     });
 

@@ -56,6 +56,36 @@ class Handler extends ExceptionHandler
             return response()->json(ApiFormatter::createJson(404, 'Not Found', 'Route not found.'), 404);
         }
 
+        // For API routes, return JSON for any exception (avoid HTML responses)
+        if ($request->is('api/*')) {
+            $user = null;
+            try {
+                $user = JWTAuth::parseToken()->authenticate();
+            } catch (\Exception $e) {
+                $user = null;
+            }
+
+            $filteredRequest = ApiFormatter::filterSensitiveData($request->all());
+
+            $status = 500;
+            if ($exception instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                $status = $exception->getStatusCode();
+            }
+
+            $message = $exception->getMessage() ?: ($status == 500 ? 'Server Error' : 'Error');
+
+            LogModel::create([
+                'user_id'       => $user ? $user->id : null,
+                'log_method'    => $request->method(),
+                'log_url'       => $request->fullUrl(),
+                'log_ip'        => $request->ip(),
+                'log_request'   => json_encode($filteredRequest),
+                'log_response'  => json_encode(ApiFormatter::createJson($status, $message, null)),
+            ]);
+
+            return response()->json(ApiFormatter::createJson($status, $message, null), $status);
+        }
+
         return parent::render($request, $exception);
     }
 }
